@@ -53,7 +53,7 @@ class SmtpSenderTest {
 
             // then
             Message message = onlySentMessage(transportMocked);
-            assertThat(message.getHeader("Message-Id"))
+            assertThat(message.getHeader("X-Request-ID"))
                     .containsExactly("GmailIntegrationApp:msg_123");
         }
     }

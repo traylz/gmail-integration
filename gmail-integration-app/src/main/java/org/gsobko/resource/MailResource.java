@@ -35,11 +35,11 @@ public class MailResource {
 
     public void sendEmail(Context ctx) {
         SendMailRequest sendMailRequest = ctx.bodyAsClass(SendMailRequest.class);
-        String messageId = require(sendMailRequest.messageId(), "messageId");
+        String requestId = require(sendMailRequest.requestId(), "requestId");
         String toAddress = require(sendMailRequest.to(), "toAddress");
         String subject = require(sendMailRequest.subject(), "subject");
         String body = require(sendMailRequest.body(), "body");
-        sender.sendEmail(messageId, toAddress, subject, body);
+        sender.sendEmail(requestId, toAddress, subject, body);
         ctx.status(HttpStatus.OK);
     }
 

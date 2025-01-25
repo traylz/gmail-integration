@@ -31,12 +31,12 @@ public class SmtpSender {
         this.sessionProvider = sessionProvider;
     }
 
-    public void sendEmail(String messageId, String toAddress, String subject, String body) {
+    public void sendEmail(String requestId, String toAddress, String subject, String body) {
         Session session = sessionProvider.get();
         try {
-            Message message = createMessage(messageId, toAddress, subject, body, session);
+            Message message = createMessage(requestId, toAddress, subject, body, session);
             Transport.send(message);
-            logger.info("Email {} sent successfully to {}", messageId, toAddress);
+            logger.info("Email {} sent successfully to {}", requestId, toAddress);
         } catch (AddressException e) {
             logger.error("Invalid address", e);
             throw new IllegalArgumentException(e);
@@ -47,10 +47,10 @@ public class SmtpSender {
     }
 
 
-    private Message createMessage(String messageId, String toAddresses, String subject, String body, Session session) throws MessagingException {
+    private Message createMessage(String requestId, String toAddresses, String subject, String body, Session session) throws MessagingException {
         Message message = new MimeMessage(session);
-        String messageIdFullyQualified = "%s:%s".formatted(MESSAGE_ID_PREFIX, messageId);
-        message.addHeader("Message-Id", messageIdFullyQualified);
+        String requestIdFullyQualified = "%s:%s".formatted(MESSAGE_ID_PREFIX, requestId);
+        message.addHeader("X-Request-ID", requestIdFullyQualified);
         message.setFrom(new InternetAddress(senderEmail));
         message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toAddresses));
         message.setSubject(subject);

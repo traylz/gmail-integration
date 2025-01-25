@@ -34,7 +34,7 @@ with request body
 Request:
 ```json
 {
-  "messageId": "Message Id will be used to form a Message-ID header for the email",
+  "requestId": "Request Id will be used to form a X-Request-ID header for the email",
   "to": "email1@somewhere, email2@somewhere",
   "subject" : "hello there",
   "body": "This is body of a message"
@@ -139,8 +139,8 @@ But as you still need to handle these content-types differently, two separate fi
 
 
 ### Idempotency
-SMTP does not have idempotency out of the box, I have added stamping the Message-ID based on messageId from request. Gmail actually will allow you sending multiple messages with same Message-ID.
-The proper approach to idempotency would require fetching sent emails and looking for our Message-ID.
+SMTP does not have idempotency out of the box, I have added stamping a custom header X-Request-ID based on requestId from request. Gmail actually will allow you sending multiple messages with same Message-ID.
+The proper approach to idempotency would require fetching sent emails and looking for our X-Request-ID.
 
 See: "Next steps: Idempotency on send + extra model for send requests"
 

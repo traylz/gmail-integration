@@ -70,7 +70,7 @@ class MailResourceTest extends FunctionalTestBase {
         // given
         String emailRequest = """
                 {
-                   "messageId":"msg123",
+                   "requestId":"msg123",
                    "to": "bbb@ddd,ccc@ddd",
                    "subject":"Subj1",
                    "body":"Hello, world!"
@@ -120,7 +120,7 @@ class MailResourceTest extends FunctionalTestBase {
         // given
         String emailRequest = """
                 {
-                   "messageId":"msg123",
+                   "requestId":"msg123",
                    "to": "bbb@ddd;3!@22@22ccc@ddd",
                    "subject":"Subj1",
                    "body":"Hello, world!"
