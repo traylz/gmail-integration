@@ -55,7 +55,9 @@ public class PeriodicMailFetcher {
             OptionalLong maxImapUid = repo.maxImapUid();
             imapFetcher.fetchEmailsSinceUid(maxImapUid, email -> {
                 try {
-                    repo.save(toEmailModel(email));
+                    EmailMessage emailModel = toEmailModel(email);
+                    repo.save(emailModel);
+                    logger.info("Saved a mail id={}, imapUid={} to database", emailModel.id(), email.imapUid());
                 } catch (Exception e) {
                     logger.error("Could not save the fetched email {}", email.imapUid());
                 }

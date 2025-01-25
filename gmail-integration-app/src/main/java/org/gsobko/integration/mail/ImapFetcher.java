@@ -107,7 +107,6 @@ public class ImapFetcher {
         String cc = Optional.ofNullable(message.getRecipients(Message.RecipientType.CC)).map(InternetAddress::toString).orElse("");
         MimeExtractor.MessageContent content = MimeExtractor.extractContent(message);
         String subject = message.getSubject();
-        logger.info("Message uid {} and subject {}: content is: text={}; html={}; attachemnts={}", uid, subject, content.text().isPresent(), content.html().isPresent(), content.attachmentNames());
         return new FetchedEmail(
                 messageId, uid,
                 from, to, cc,
