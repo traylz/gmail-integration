@@ -46,7 +46,7 @@ Response codes
 * Status `500` - internal error occurred
 
 ### Fetch emails
-* ```GET /mails?from`  
+* `GET /mails?from`  
 Parameters `from` and `to` are required and should be provided in ISO format like `2024-01-21T23:50:41Z`  
 Parameter `limit` is optional and defaults to `100`
 
@@ -86,6 +86,23 @@ Response codes
 
 ### Database
 Database schema is the following:
+```sql
+CREATE TABLE emails
+(
+    id           UUID PRIMARY KEY,
+    imap_uid     INTEGER,
+    message_id   VARCHAR,
+    mail_from    VARCHAR,
+    mail_to      VARCHAR,
+    mail_cc      VARCHAR,
+    subject      VARCHAR,
+    body_text    VARCHAR,
+    body_html    VARCHAR,
+    attachments  VARCHAR,
+    sent_date    TIMESTAMP WITH TIME ZONE,
+    created_date TIMESTAMP WITH TIME ZONE
+)
+```
 
 # Findings/considerations
 Below are some findings and considerations that might be useful to one doing the integration with mail.
@@ -96,7 +113,7 @@ There are several candidates that seem plausible for the purpose,but do not work
 
 But, there is an [IMAP UID](https://www.rfc-editor.org/rfc/rfc3501#section-2.3.1.1) for rescue - it is an monotonously increasing sequence that is immutable for a message.
 
-So here I have used it as a "checkpoint" to understand
+So here I have used it as a "checkpoint" to understand from which email to fetch new emails.
 ### IMAP performance
 If you try to fetch all mails from a folder using `Message[] getMessages()` method - it will hang for really long time, so instead of doing that I am first fetching UIDs to fetch and then go fetching mail-by-mail using UID.
 
@@ -146,7 +163,7 @@ Message-ID is already saved in emails table, so in API I would expose it as an e
 As mentioned above, SMTP does not have idempotency out of the box, so what we can do:
 1. Add an extra model to handle idempotency in simple scenarios (like mail sent successfully and we receive another request to send with same messageId).
 2. Set `Message-ID` on the outgoing email based on `messageId` in request.
-3. In edge cases when we did not receive a proper response from SMTP t
+3. In edge cases when we did not receive a proper response from SMTP transport we should do a FETCH via IMAP to find a message with our Message-ID and based on that we can do;
 4. Alternative path to explore - is to look into Gmail API (rest API) to create Draft first and then send it. 
 
 ### Multiple accounts
