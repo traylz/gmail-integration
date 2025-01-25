@@ -115,6 +115,26 @@ class MailResourceTest extends FunctionalTestBase {
         assertThat(response.body()).contains("to");
     }
 
+    @Test
+    void should_return_400_bad_request_if_send_with_malformed_to() throws Exception {
+        // given
+        String emailRequest = """
+                {
+                   "messageId":"msg123",
+                   "to": "bbb@ddd;3!@22@22ccc@ddd",
+                   "subject":"Subj1",
+                   "body":"Hello, world!"
+                }
+                """;
+
+        // when
+        URI postMailUri = URI.create(baseUrl + "/mail");
+        HttpResponse<String> response = post(postMailUri, emailRequest);
+
+        // then
+        assertEquals(400, response.statusCode());
+    }
+
     private HttpResponse<String> get(URI url) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(url)

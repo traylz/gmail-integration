@@ -1,11 +1,13 @@
 package org.gsobko.integration.mail;
 
 import jakarta.mail.*;
+import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.Properties;
 import java.util.function.Supplier;
@@ -35,6 +37,9 @@ public class SmtpSender {
             Message message = createMessage(messageId, toAddress, subject, body, session);
             Transport.send(message);
             logger.info("Email {} sent successfully to {}", messageId, toAddress);
+        } catch (AddressException e) {
+            logger.error("Invalid address", e);
+            throw new IllegalArgumentException(e);
         } catch (MessagingException e) {
             logger.error("Error sending email", e);
             throw new IllegalStateException(e);
@@ -50,7 +55,7 @@ public class SmtpSender {
         message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toAddresses));
         message.setSubject(subject);
         message.setText(body);
-        message.setSentDate(new Date()); // XXX clock !
+        message.setSentDate(Date.from(Instant.now()));
         return message;
     }
 

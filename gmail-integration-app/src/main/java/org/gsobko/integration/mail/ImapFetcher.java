@@ -29,7 +29,7 @@ public class ImapFetcher {
         this.folder = folder;
     }
 
-    private Properties imapsProperties(String hostname, int port, boolean disableSslChecks) {
+    private static Properties imapsProperties(String hostname, int port, boolean disableSslChecks) {
         Properties properties = new Properties();
         properties.put("mail.imaps.host", hostname);
         properties.put("mail.imaps.port", port);
@@ -65,6 +65,12 @@ public class ImapFetcher {
             return newUuids.subList(newUuids.size() - initialDepthLimit, newUuids.size());
         }
         return newUuids;
+    }
+
+    private IMAPFolder openFolder(Store store) throws MessagingException {
+        IMAPFolder emailFolder = (IMAPFolder) store.getFolder(folder);
+        emailFolder.open(Folder.READ_ONLY);
+        return emailFolder;
     }
 
     private Store getStore() throws MessagingException {
@@ -108,12 +114,6 @@ public class ImapFetcher {
                 subject, content.text(), content.html(), content.attachmentNames(),
                 message.getSentDate().toInstant()
         );
-    }
-
-    private IMAPFolder openFolder(Store store) throws MessagingException {
-        IMAPFolder emailFolder = (IMAPFolder) store.getFolder(folder);
-        emailFolder.open(Folder.READ_ONLY);
-        return emailFolder;
     }
 
 

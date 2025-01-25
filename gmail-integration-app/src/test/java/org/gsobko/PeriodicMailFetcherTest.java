@@ -3,6 +3,7 @@ package org.gsobko;
 import org.gsobko.integration.mail.FetchedEmail;
 import org.gsobko.integration.mail.ImapFetcher;
 import org.gsobko.repo.MailRepo;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -84,6 +85,40 @@ class PeriodicMailFetcherTest {
                         && savedMessage.html().equals("html")
                         && savedMessage.attachments().equals(List.of("attachment1.pdf", "attachment2.pdf"))
                         && savedMessage.sentDate().equals(sentDate))
+        );
+    }
+
+    @Test
+    void should_still_save_second_email_if_repo_throws_on_first() {
+        // given
+        givenEmailsInInbox(
+                someEmailWithUid(3),
+                someEmailWithUid(4));
+        doThrow(IllegalStateException.class)
+                .when(repo)
+                .save(argThat(m -> m.imapUid() == 3L));
+        fetcher.start();
+
+        // when
+        scheduledTasksAreRun(scheduler);
+
+        // then
+        verify(repo, times(1)).save(argThat(saved -> saved.imapUid() == 3));
+        verify(repo, times(1)).save(argThat(saved -> saved.imapUid() == 4));
+    }
+
+    private static FetchedEmail someEmailWithUid(long uid) {
+        return new FetchedEmail(
+                "messageId123" + uid,
+                uid,
+                "from@aaa",
+                "to@bbb, vvv@aaa",
+                "",
+                "subj" + uid,
+                Optional.of("Body123"),
+                Optional.of("html"),
+                List.of("attachment1.pdf", "attachment2.pdf"),
+                Instant.now()
         );
     }
 

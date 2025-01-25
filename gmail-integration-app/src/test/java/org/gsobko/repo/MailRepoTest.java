@@ -37,10 +37,21 @@ class MailRepoTest {
     @Test
     void should_fetch_single_email_that_is_in_boundaries() {
         // given
-        EmailMessage message = someEmail()
+        EmailMessage message = EmailMessage.builder()
+                .withId(UUID.randomUUID())
                 .withImapUid(123L)
+                .withMessageId("MsgId123")
+                .withFrom("HelloThere")
+                .withText("Text")
+                .withHtml("Text")
+                .withAttachments(List.of("attachment.pdf"))
+                .withTo("TO?")
+                .withCc("cc1, cc2")
+                .withSubject("Subj")
+                .withSentDate(now.minus(10, ChronoUnit.MINUTES))
                 .withCreatedDate(now)
                 .build();
+
         mailRepo.save(message);
 
         // when

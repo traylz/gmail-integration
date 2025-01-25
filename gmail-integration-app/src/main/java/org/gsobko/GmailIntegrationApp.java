@@ -47,15 +47,13 @@ public class GmailIntegrationApp {
         PeriodicMailFetcher periodicMailFetcher = new PeriodicMailFetcher(repo, fetcher, 5);
         periodicMailFetcher.start();
 
-        cleanupOnStop.add(javalin::stop);
         cleanupOnStop.add(periodicMailFetcher::stop);
+        cleanupOnStop.add(javalin::stop);
         cleanupOnStop.add(dataSource);
     }
 
     private Javalin bootstrapWebServer(MailRepo repo, SmtpSender sender) {
         Javalin javalin = createJavalin();
-
-
         MailResource mailResource = new MailResource(repo, sender);
         javalin.get("/mails", mailResource::fetchEmails);
         javalin.post("/mail", mailResource::sendEmail);
@@ -78,6 +76,8 @@ public class GmailIntegrationApp {
             if (e instanceof IllegalArgumentException) {
                 ctx.status(HttpStatus.BAD_REQUEST);
                 ctx.result(e.getMessage());
+            } else {
+                ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         });
 

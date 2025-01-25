@@ -26,7 +26,7 @@ public class PeriodicMailFetcher {
         this(repo, imapFetcher, pollPeriodSeconds, createScheduledService());
     }
 
-    public PeriodicMailFetcher(MailRepo repo, ImapFetcher imapFetcher, long pollPeriodSeconds, ScheduledExecutorService executor) {
+    PeriodicMailFetcher(MailRepo repo, ImapFetcher imapFetcher, long pollPeriodSeconds, ScheduledExecutorService executor) {
         this.repo = repo;
         this.imapFetcher = imapFetcher;
         this.pollPeriodSeconds = pollPeriodSeconds;
@@ -50,10 +50,16 @@ public class PeriodicMailFetcher {
         executor.shutdownNow();
     }
 
-    void downloadNewMail() {
+    private void downloadNewMail() {
         try {
             OptionalLong maxImapUid = repo.maxImapUid();
-            imapFetcher.fetchEmailsSinceUid(maxImapUid, e -> repo.save(toEmailModel(e)));
+            imapFetcher.fetchEmailsSinceUid(maxImapUid, email -> {
+                try {
+                    repo.save(toEmailModel(email));
+                } catch (Exception e) {
+                    logger.error("Could not save the fetched email {}", email.imapUid());
+                }
+            });
         } catch (Exception e) {
             logger.error("Could not fetch new emails", e);
         }
