@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class MailRepoTest {
 
+    Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
     MailRepo mailRepo;
 
     @BeforeEach
@@ -38,12 +39,12 @@ class MailRepoTest {
         // given
         EmailMessage message = someEmail()
                 .withImapUid(123L)
-                .withCreatedDate(Instant.now())
+                .withCreatedDate(now)
                 .build();
         mailRepo.save(message);
 
         // when
-        List<EmailMessage> emailMessages = mailRepo.fetchAllInInterval(Instant.EPOCH, Instant.now(), 100);
+        List<EmailMessage> emailMessages = mailRepo.fetchAllInInterval(Instant.EPOCH, now, 100);
 
         // then
         assertThat(emailMessages).containsExactly(message);
@@ -54,17 +55,17 @@ class MailRepoTest {
         // given
         EmailMessage oldMessage = someEmail()
                 .withImapUid(123L)
-                .withCreatedDate(Instant.now().minusSeconds(10000))
+                .withCreatedDate(now.minusSeconds(10000))
                 .build();
         EmailMessage newMessage = someEmail()
                 .withImapUid(124L)
-                .withCreatedDate(Instant.now())
+                .withCreatedDate(now)
                 .build();
         mailRepo.save(oldMessage);
         mailRepo.save(newMessage);
 
         // when
-        List<EmailMessage> emailMessages = mailRepo.fetchAllInInterval(Instant.now().minusSeconds(100), Instant.now(), 100);
+        List<EmailMessage> emailMessages = mailRepo.fetchAllInInterval(now.minusSeconds(100), now, 100);
 
         // then
         assertThat(emailMessages).containsExactly(newMessage);
@@ -108,7 +109,7 @@ class MailRepoTest {
         assertThat(maxImapUid).hasValue(9L);
     }
 
-    private static EmailMessage.Builder someEmail() {
+    private EmailMessage.Builder someEmail() {
         return EmailMessage.builder()
                 .withId(UUID.randomUUID())
                 .withImapUid(123L)
@@ -120,8 +121,8 @@ class MailRepoTest {
                 .withTo("TO?")
                 .withCc("cc1;cc2")
                 .withSubject("Subj")
-                .withSentDate(Instant.now().minus(10, ChronoUnit.MINUTES))
-                .withCreatedDate(Instant.now());
+                .withSentDate(now.minus(10, ChronoUnit.MINUTES))
+                .withCreatedDate(now);
     }
 
 
