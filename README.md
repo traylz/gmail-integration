@@ -46,7 +46,7 @@ Response codes
 * Status `500` - internal error occurred
 
 ### Fetch emails
-* `GET /mails?from`  
+* `GET /mails?from={from}&to={to}[&limit=200]`  
 Parameters `from` and `to` are required and should be provided in ISO format like `2024-01-21T23:50:41Z`  
 Parameter `limit` is optional and defaults to `100`
 
