@@ -88,7 +88,7 @@ public class MailRepo {
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(MAX_UID_SQL)) {
             try (ResultSet resultSet = ps.executeQuery()) {
-                if (resultSet.first()) {
+                if (resultSet.next()) {
                     long value = resultSet.getLong(1);
                     if (!resultSet.wasNull()) {
                         return OptionalLong.of(value);

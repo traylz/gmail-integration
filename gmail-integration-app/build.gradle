@@ -22,6 +22,8 @@ dependencies {
     implementation 'org.flywaydb:flyway-core:11.2.0'
 
     implementation 'com.h2database:h2:2.2.224' // move to test implementation if switch to postgres
+    implementation 'org.flywaydb:flyway-database-postgresql:11.2.0'
+    implementation 'org.postgresql:postgresql:42.7.5'
 
     testImplementation 'com.icegreen:greenmail:2.1.2'
     testImplementation 'org.mockito:mockito-core:5.15.2'
