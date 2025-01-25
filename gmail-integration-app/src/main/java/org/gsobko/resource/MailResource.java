@@ -22,9 +22,9 @@ public class MailResource {
 
     public void fetchEmails(Context ctx) {
         int limit = ctx.queryParamAsClass("limit", Integer.class).getOrDefault(DEFAULT_LIMIT);
-        Instant from = getQueryParameterInstant(ctx, "from");
-        Instant to = getQueryParameterInstant(ctx, "to");
-        List<EmailMessage> result = mailRepo.fetchAllInInterval(from, to, limit);
+        Instant start = getQueryParameterInstant(ctx, "start");
+        Instant end = getQueryParameterInstant(ctx, "end");
+        List<EmailMessage> result = mailRepo.fetchAllInInterval(start, end, limit);
         ctx.json(result);
     }
 

@@ -64,12 +64,12 @@ public class MailRepo {
     }
 
 
-    public List<EmailMessage> fetchAllInInterval(Instant from, Instant to, int limit) {
+    public List<EmailMessage> fetchAllInInterval(Instant start, Instant end, int limit) {
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(SELECT_SQL)) {
 
-            ps.setTimestamp(1, Timestamp.from(from));
-            ps.setTimestamp(2, Timestamp.from(to));
+            ps.setTimestamp(1, Timestamp.from(start));
+            ps.setTimestamp(2, Timestamp.from(end));
             ps.setInt(3, limit);
 
             List<EmailMessage> emails = new ArrayList<>();

@@ -6,7 +6,7 @@ Sending is done via SMTP.
 Receiving done via IMAP - the folder is periodically polled (using UID as a "checkpoint").  
 Two endpoints are exposed - to send and to fetch.  
 Web server - Javalin. Database interactions - pure JDBC. No DI framework.  
-Apart from unit tests there are functional tests that use GreenMail embedded mail server to send/receive mail.  
+Apart from unit tests there are [functional tests](./gmail-integration-app/src/test/java/org/gsobko/resource/MailResourceTest.java) that use GreenMail embedded mail server to send/receive mail.  
 In general the same code applicable for any SMTP/IMAP integration with user-pass auth.
 
 # How to run
@@ -22,7 +22,7 @@ put in app properties here [gmail-integration-app/src/main/resources/app.propert
 3. Run from command line
 `./gradlew run`  
 Here you have it!
-4. The database used is in-mem H2, to change to Postgres - change db.ur
+4. The database used is in-mem H2, to change to Postgres - change db parameters in app.properties section
 
 ## Endpoints
 There are two endpoints: Send email and Get emails
@@ -46,8 +46,9 @@ Response codes
 * Status `500` - internal error occurred
 
 ### Fetch emails
-* `GET /mails?from={from}&to={to}[&limit=200]`  
-Parameters `from` and `to` are required and should be provided in ISO format like `2024-01-21T23:50:41Z`  
+* `GET /mails?start={start}&end={end}[&limit=200]`  
+Parameters `start` and `end` are required and should be provided in ISO format like `2024-01-21T23:50:41Z`.  
+*N.B.!* timestamp here represents created_date (meaning the email was written to database).
 Parameter `limit` is optional and defaults to `100`
 
 Response will be a JSON array of mails from database, example
@@ -85,7 +86,7 @@ Response codes
 * `gmail.imap.disable_ssl_checks` - this should always be false for prod, only used for functional tests to connect to embedded IMAP server.
 
 ### Database
-Database schema is the following:
+Database is migrated using Flyway on application start. Database schema is the following:
 ```sql
 CREATE TABLE emails
 (
@@ -111,13 +112,15 @@ Below are some findings and considerations that might be useful to one doing the
 To fetch "new" mail you need to somehow have a "checkpoint" from which to consider emails to be new. 
 There are several candidates that seem plausible for the purpose,but do not work - seqnum (sequence number changes when you delete an email from the folder), some of the date fields (might be backdated if you move emails between folders).
 
-But, there is an [IMAP UID](https://www.rfc-editor.org/rfc/rfc3501#section-2.3.1.1) for rescue - it is an monotonously increasing sequence that is immutable for a message.
+But, there is an [IMAP UID](https://www.rfc-editor.org/rfc/rfc3501#section-2.3.1.1) for rescue - it is a monotonously increasing sequence that is immutable for a message.
 
 So here I have used it as a "checkpoint" to understand from which email to fetch new emails.
 ### IMAP performance
 If you try to fetch all mails from a folder using `Message[] getMessages()` method - it will hang for really long time, so instead of doing that I am first fetching UIDs to fetch and then go fetching mail-by-mail using UID.
 
 Also, because of that I've added a parameter `gmail.initial_max_depth` to control the max depth that you want to fetch on initial connect.
+
+To improve performance one can look into imap connection pooling and doing requests in parallel.
 
 ### IMAP Testing
 Existing libs for IMAP integration (i.e. jakarta-mail) are horrendous in terms of testability.
@@ -129,10 +132,14 @@ The same embedded IMAP server is used for Functional tests.
 Turned out that large part of the mails will contain both `text/html` and `text/plain` representations.
 In this case we will receive a body with mime type `multipart/alternative` and both `text/html` and `text/plain` representation.
 
-I've decided to save both of them - in corresponding `html` and `text` fields of message, as alternative is to save content-type and content might be (here I would probably change later to fetching single if we support reply-to on html TODO) 
+I've decided to save both of them - in corresponding `html` and `text` fields of message, as 
+
+Alternative solution is to save content-type and content. 
+But as you still need to handle these content-types differently, two separate fields does not seem a bad idea (discussible. Anyway, the switch should be straightforward if required)
+
 
 ### Idempotency
-SMTP does not have idempotency out of the box, I have added stamping the Message-ID based on messageId from request. Gmail actually will allow .
+SMTP does not have idempotency out of the box, I have added stamping the Message-ID based on messageId from request. Gmail actually will allow you sending multiple messages with same Message-ID.
 The proper approach to idempotency would require fetching sent emails and looking for our Message-ID.
 
 See: "Next steps: Idempotency on send + extra model for send requests"

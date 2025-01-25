@@ -39,7 +39,7 @@ class MailResourceTest extends FunctionalTestBase {
             // when
             Instant from = Instant.now().minusSeconds(100);
             Instant to = Instant.now();
-            HttpResponse<String> response = get(URI.create(baseUrl + "/mails?from=%s&to=%s".formatted(from, to)));
+            HttpResponse<String> response = get(URI.create(baseUrl + "/mails?start=%s&end=%s".formatted(from, to)));
 
             //then
             assertThat(response.statusCode()).isEqualTo(200);
@@ -96,23 +96,23 @@ class MailResourceTest extends FunctionalTestBase {
 
 
     @Test
-    void should_return_400_bad_request_if_request_wo_from_date() throws Exception {
+    void should_return_400_bad_request_if_request_wo_start_date() throws Exception {
         // when
-        HttpResponse<String> response = get(URI.create(baseUrl + "/mails?&to=%s".formatted(Instant.now())));
+        HttpResponse<String> response = get(URI.create(baseUrl + "/mails?&end=%s".formatted(Instant.now())));
 
         //then
         assertThat(response.statusCode()).isEqualTo(400);
-        assertThat(response.body()).contains("from");
+        assertThat(response.body()).contains("start");
     }
 
     @Test
-    void should_return_400_bad_request_if_request_wo_to_date() throws Exception {
+    void should_return_400_bad_request_if_request_wo_end_date() throws Exception {
         // when
-        HttpResponse<String> response = get(URI.create(baseUrl + "/mails?&from=%s".formatted(Instant.now())));
+        HttpResponse<String> response = get(URI.create(baseUrl + "/mails?&start=%s".formatted(Instant.now())));
 
         //then
         assertThat(response.statusCode()).isEqualTo(400);
-        assertThat(response.body()).contains("to");
+        assertThat(response.body()).contains("end");
     }
 
     @Test
