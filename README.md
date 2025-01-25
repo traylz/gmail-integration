@@ -1,3 +1,5 @@
+![CI](https://github.com/traylz/gmail-integration/actions/workflows/ci.yml/badge.svg)
+
 # Description
 This application integrates with Gmail to send simple text message.  
 Sending is done via SMTP.  
@@ -57,6 +59,8 @@ TBD
 # Findings/considerations
 Below are some findings that might be useful
 ### IMAP UID
+
+### IMAP performance
 
 ### IMAP Testing
 
